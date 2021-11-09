@@ -25,10 +25,10 @@ def predict():
     predict_idx = data['show_id']
     n_neighbors = data['num_of_recs']
 
-    # similar_shows = model.kneighbors(X=df_filtered.iloc[predict_idx].to_numpy().reshape(1, -1),
-    #                                     n_neighbors=n_neighbors+1, 
-    #                                     return_distance=False
-    #                                 )
+    similar_shows = model.kneighbors(X=df_filtered.iloc[predict_idx].to_numpy().reshape(1, -1), \
+                                        n_neighbors=n_neighbors+1, \
+                                        return_distance=False \
+                                    )
 
     # results = []
 
