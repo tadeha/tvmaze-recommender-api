@@ -28,9 +28,9 @@ def predict():
 
     for show_idx in similar_shows[0]:
         if predict_idx != show_idx:
-            results[names_df.at[show_idx,'id']] = names_df.at[show_idx,'name']
+            results[str(names_df.at[show_idx,'id'])] = names_df.at[show_idx,'name']
 
-    return jsonify(similar_shows=results)
+    return jsonify(similar_show=results)
 
 if __name__ == '__main__':
     app.run(port = 5000)
