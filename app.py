@@ -1,6 +1,7 @@
 import pandas as pd
 from flask import Flask, jsonify, request
 import pickle
+import json
 
 model = pickle.load(open('model.pkl','rb'))
 df_filtered = pd.read_csv('series_data.csv')
@@ -36,11 +37,7 @@ def predict():
         if predict_idx != show_idx:
             results.append(names_df.at[show_idx,'id'])
 
-    output = {'similar_shows': results}
-
-    str1 = ''.join(str(e) for e in results)
-
-    return jsonify(results=str1)
+    return jsonify(similar_shows=json.dumps(results))
 
 if __name__ == '__main__':
     app.run(port = 5000)
