@@ -41,4 +41,5 @@ def predict():
     return jsonify(results=output)
 
 if __name__ == '__main__':
+    app.debug = True
     app.run(port = 5000, debug = True)
