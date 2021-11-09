@@ -24,13 +24,13 @@ def predict():
                                         return_distance=False
                                     )
 
-    results = []
+    results = {}
 
     for show_idx in similar_shows[0]:
         if predict_idx != show_idx:
-            results.append(names_df.at[show_idx,'id'])
+            results[names_df.at[show_idx,'id']] = names_df.at[show_idx,'name']
 
-    return jsonify(similar_shows=', '.join(str(e) for e in results))
+    return jsonify(similar_shows=results)
 
 if __name__ == '__main__':
     app.run(port = 5000)
