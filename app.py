@@ -30,13 +30,13 @@ def predict():
                                         return_distance=False \
                                     )
 
-    # results = []
+    results = []
 
-    # for show_idx in similar_shows[0]:
-    #     if predict_idx != show_idx:
-    #         results.append(names_df.at[show_idx,'id'])
+    for show_idx in similar_shows[0]:
+        if predict_idx != show_idx:
+            results.append(names_df.at[show_idx,'id'])
 
-    # output = {'similar_shows': results}
+    output = {'similar_shows': results}
 
     return jsonify(results=n_neighbors)
 
