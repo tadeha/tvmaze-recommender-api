@@ -38,7 +38,7 @@ def predict():
 
     output = {'similar_shows': results}
 
-    return jsonify(results=predict_idx)
+    return jsonify(results=results)
 
 if __name__ == '__main__':
     app.run(port = 5000)
