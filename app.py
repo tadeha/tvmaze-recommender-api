@@ -17,23 +17,26 @@ def predict():
     '''
         Input Data:
         {
-            'show_id': 1,
-            'num_of_recs': 5,
+            "show_id": 512,
+            "num_of_recs": 10
         }
     '''
     data = request.get_json(force=True)
     predict_idx = data['show_id']
     n_neighbors = data['num_of_recs']
 
-    similar_shows = model.kneighbors(X=df_filtered.iloc[predict_idx].to_numpy().reshape(1, -1), n_neighbors=n_neighbors+1, return_distance=False)
+    similar_shows = model.kneighbors(X=df_filtered.iloc[predict_idx].to_numpy().reshape(1, -1),
+                                        n_neighbors=n_neighbors+1, 
+                                        return_distance=False
+                                    )
 
-    similar_shows = []
+    results = []
 
     for show_idx in similar_shows[0]:
         if predict_idx != show_idx:
-            similar_shows.append(names_df.at[show_idx,'id'])
+            results.append(names_df.at[show_idx,'id'])
 
-    output = {'similar_shows': similar_shows}
+    output = {'similar_shows': results}
 
     return jsonify(results=output)
 
