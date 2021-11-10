@@ -28,7 +28,7 @@ def recommend():
 
         for show_idx in similar_shows[0]:
             if predict_idx != show_idx:
-                results[names_df.iloc[[show_idx]].index.tolist()[0]] = names_df.iloc[[show_idx]].values[0][0]
+                results[str(names_df.iloc[[show_idx]].index.tolist()[0])] = names_df.iloc[[show_idx]].values[0][0]
 
     except KeyError:
         results = {}
