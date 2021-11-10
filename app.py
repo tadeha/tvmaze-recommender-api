@@ -1,7 +1,6 @@
 import pandas as pd
 from flask import Flask, jsonify, request
 import pickle
-import json
 
 model = pickle.load(open('model.pkl','rb'))
 df_filtered = pd.read_csv('series_data.csv')
@@ -29,7 +28,7 @@ def recommend():
 
         for show_idx in similar_shows[0]:
             if predict_idx != show_idx:
-                results[str(names_df.iloc[[show_idx]].index.tolist()[0])] = names_df.iloc[[show_idx]].values[0][0]
+                results[str(names_df.iloc[[show_idx]].index.tolist()[0])] = names_df.iloc[[show_idx]].values[0][1]
 
     except KeyError:
         results = {}
@@ -38,7 +37,7 @@ def recommend():
         for trend in df_trend.iterrows():
             results[trend[0]] = trend[1]['name']
 
-    return jsonify(similar_show=json.dumps(dict))
+    return jsonify(similar_show=results)
 
 if __name__ == '__main__':
     app.run(port = 5000)
