@@ -28,7 +28,7 @@ def recommend():
 
         for show_idx in similar_shows[0]:
             if predict_idx != show_idx:
-                results[str(names_df.iloc[[show_idx]].index.tolist()[0])] = names_df.iloc[[show_idx]].values[0][0]
+                results[names_df.iloc[[show_idx]].index.tolist()[0]] = names_df.iloc[[show_idx]].values[0][0]
 
     except KeyError:
         results = {}
@@ -37,7 +37,7 @@ def recommend():
         for trend in df_trend.iterrows():
             results[trend[0]] = trend[1]['name']
 
-    return jsonify(similar_show=results)
+    return jsonify(similar_show=json.dumps(dict))
 
 if __name__ == '__main__':
     app.run(port = 5000)
