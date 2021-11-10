@@ -5,6 +5,7 @@ import json
 
 model = pickle.load(open('model.pkl','rb'))
 df_filtered = pd.read_csv('series_data.csv')
+df_filtered = df_filtered.set_index('id')
 names_df = pd.read_csv('names.csv')
 
 # app
