@@ -1,3 +1,6 @@
+'''
+    To debug, setup an env, and then run python3 app.py runserver -d with debug=True added to the app.run
+'''
 import pandas as pd
 from flask import Flask, jsonify, request
 import pickle
@@ -31,7 +34,7 @@ def recommend():
         
         for show_idx in similar_shows[0]:
             if predict_idx != show_idx:
-                results[input_df.iloc[[show_idx]]['id'].values[0]] = input_df.iloc[[show_idx]]['name'].values[0]
+                results[str(input_df.iloc[[show_idx]]['id'].values[0])] = input_df.iloc[[show_idx]]['name'].values[0]
 
     except KeyError:        
         results = {}
