@@ -41,7 +41,7 @@ def recommend():
         df_trend = input_df[input_df['show_rating']>=8.5].sample(n=n_neighbors)
 
         for trend in df_trend.iterrows():
-            results[trend[0]] = trend[1]['name']
+            results[str(trend[0])] = trend[1]['name']
 
     return jsonify(recommendations=results)
 
