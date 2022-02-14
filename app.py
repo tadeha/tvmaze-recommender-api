@@ -2,16 +2,8 @@ import pandas as pd
 from flask import Flask, jsonify, request
 import pickle
 
-model = pickle.load(open('model.pkl','rb'))
-df_filtered = pd.read_csv('series_data.csv')
-df_filtered = df_filtered.set_index('id')
-
-model_weighted = pickle.load(open('model_weighted.pkl','rb'))
-df_filtered_weighted = pd.read_csv('series_data_weighted.csv')
-df_filtered_weighted = df_filtered_weighted.set_index('id')
-
-
-names_df = pd.read_csv('names.csv')
+model = pickle.load(open('knn_model.pkl','rb'))
+input_df = pd.read_csv('series_data.csv')
 
 # app
 app = Flask(__name__)
@@ -27,25 +19,23 @@ def recommend():
     weighted = data['weighted_model']
 
     try:
-        if weighted:
-            similar_shows = model_weighted.kneighbors(X=df_filtered_weighted.loc[[predict_idx]].to_numpy().reshape(1, -1),
-                                            n_neighbors=n_neighbors+1,
+        show = input_df[input_df['id'] == predict_idx].drop(['id', 'name', 'show_rating'],axis=1).to_numpy().reshape(1, -1)
+
+        similar_shows = model.kneighbors(
+                                            X=show,
+                                            n_neighbors=n_neighbors,
                                             return_distance=False
                                         )
-        else:
-            similar_shows = model.kneighbors(X=df_filtered.loc[[predict_idx]].to_numpy().reshape(1, -1),
-                                            n_neighbors=n_neighbors+1,
-                                            return_distance=False
-                                        )
+
         results = {}
         
         for show_idx in similar_shows[0]:
             if predict_idx != show_idx:
-                results[str(names_df.iloc[[show_idx]].index.tolist()[0])] = names_df.iloc[[show_idx]].values[0][1]
+                results[input_df.iloc[[show_idx]]['id'].values[0]] = input_df.iloc[[show_idx]]['name'].values[0]
 
-    except KeyError:
+    except KeyError:        
         results = {}
-        df_trend = names_df[names_df['show_rating']>=8.5].sample(n=n_neighbors)
+        df_trend = input_df[input_df['show_rating']>=8.5].sample(n=n_neighbors)
 
         for trend in df_trend.iterrows():
             results[trend[0]] = trend[1]['name']
