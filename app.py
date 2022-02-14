@@ -40,7 +40,8 @@ def recommend():
         for trend in df_trend.iterrows():
             results[trend[0]] = trend[1]['name']
 
-    return jsonify(similar_show=results)
+    return jsonify(recommendations=results)
+
 
 if __name__ == '__main__':
     app.run(port = 5000)
