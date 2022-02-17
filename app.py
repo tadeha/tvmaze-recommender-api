@@ -9,7 +9,7 @@ from flask import Flask, jsonify, request
 import pickle
 
 # Constants
-MIN_YEAR = 2010
+MIN_YEAR = 2020
 MIN_RATING = 8.5
 COLUMNS_TO_REMOVE = ['id', 'name', 'show_rating']
 
@@ -42,8 +42,9 @@ def recommend():
         results = {}
         
         for show_idx in similar_shows[0]:
-            if predict_idx != show_idx:
-                results[str(input_df.iloc[[show_idx]]['id'].values[0])] = input_df.iloc[[show_idx]]['name'].values[0]
+            show_id = input_df.iloc[[show_idx]]['id'].values[0]
+            if predict_idx != show_id:
+                results[str(show_id)] = input_df.iloc[[show_idx]]['name'].values[0]
 
     except ValueError:        
         results = {}
