@@ -52,9 +52,9 @@ def recommend():
         """
         results = {}
         df_train = input_df.copy()
-        show = df_train[df_train['id'] == predict_idx].drop(['name', 'weight'], axis=1).set_index('id')
+        show = df_train[df_train['id'] == predict_idx].drop(['name', 'show_rating', 'weight'], axis=1).set_index('id')
         df_train = df_train.set_index('id')
-        df_train_without_metadata = df_train.drop(['name', 'weight'], axis=1)
+        df_train_without_metadata = df_train.drop(['name', 'show_rating', 'weight'], axis=1)
         ary = scipy.spatial.distance.cdist(show, df_train_without_metadata, metric='euclidean')
         similars = df_train[ary[0]==ary[0].min()]
         similars = similars[~similars.index.isin([predict_idx])]
