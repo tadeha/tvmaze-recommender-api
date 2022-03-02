@@ -4,6 +4,7 @@
     -d '{"show_id": 5555,"num_of_recs": 10,"weighted_model": false}' \
     http://127.0.0.1:5000/recommend
 '''
+from multiprocessing.sharedctypes import Value
 import pandas as pd
 from flask import Flask, jsonify, request
 import pickle
@@ -55,7 +56,7 @@ def recommend():
         show = df_train[df_train['id'] == predict_idx].drop(['name', 'show_rating', 'weight'], axis=1).set_index('id')
         df_train = df_train.set_index('id')
         df_train_without_metadata = df_train.drop(['name', 'show_rating', 'weight'], axis=1)
-        ary = scipy.spatial.distance.cdist(show, df_train_without_metadata, metric='yule')
+        ary = scipy.spatial.distance.cdist(show, df_train_without_metadata, metric='euclidean')
         similars = df_train[ary[0]==ary[0].min()]
         similars = similars[~similars.index.isin([predict_idx])]
         similars = similars.sample(n=n_neighbors, weights=similars.weight, random_state=RANDOM_STATE).reset_index().sort_values('weight', ascending=False)
@@ -66,6 +67,22 @@ def recommend():
             results[str(show_id)] = show_name
 
     # except ValueError:
+    except ValueError:
+        results = {}
+        df_train = input_df.copy()
+        show = df_train[df_train['id'] == predict_idx].drop(['name', 'show_rating', 'weight'], axis=1).set_index('id')
+        df_train = df_train.set_index('id')
+        df_train_without_metadata = df_train.drop(['name', 'show_rating', 'weight'], axis=1)
+        ary = scipy.spatial.distance.cdist(show, df_train_without_metadata, metric='yule')
+        similars = df_train[ary[0]==ary[0].min()]
+        similars = similars[~similars.index.isin([predict_idx])]
+        similars = similars.sample(n=n_neighbors, weights=similars.weight, random_state=RANDOM_STATE).reset_index().sort_values('weight', ascending=False)
+
+        for row in similars.iterrows():
+            show_id = row[1]['id']
+            show_name = row[1]['name']
+            results[str(show_id)] = show_name
+
     except IndexError:        
         results = {}
         df_trend = input_df[input_df['weight']>=MIN_WEIGHT].sample(n=n_neighbors)
