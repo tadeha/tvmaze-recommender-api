@@ -1,13 +1,12 @@
 '''
-    To debug, setup an env, and then run python3 app.py runserver -d with debug=True added to the app.run
+    To debug, setup an env, and then run python3 app.py runserver -d with port = 5000 and debug=True added to the app.run
     curl -X POST -H "Content-Type: application/json" \
     -d '{"show_id": 5555,"num_of_recs": 10,"weighted_model": false}' \
     http://127.0.0.1:5000/recommend
 '''
-from multiprocessing.sharedctypes import Value
 import pandas as pd
 from flask import Flask, jsonify, request
-import pickle
+# import pickle
 import scipy
 
 
@@ -18,7 +17,7 @@ RANDOM_STATE = 42
 COLUMNS_TO_REMOVE = ['id', 'name', 'show_rating']
 
 # Variables
-model = pickle.load(open('knn_model.pkl','rb'))
+# model = pickle.load(open('knn_model.pkl','rb'))
 input_df = pd.read_csv('series_data.csv')
 
 # app
@@ -51,7 +50,7 @@ def recommend():
             if predict_idx != show_id:
                 results[str(show_id)] = input_df.iloc[[show_idx]]['name'].values[0]
         """
-        results = {}
+        results = []
         df_train = input_df.copy()
         show = df_train[df_train['id'] == predict_idx].drop(['name', 'show_rating', 'weight'], axis=1).set_index('id')
         df_train = df_train.set_index('id')
@@ -64,11 +63,18 @@ def recommend():
         for row in similars.iterrows():
             show_id = row[1]['id']
             show_name = row[1]['name']
-            results[str(show_id)] = show_name
+            show_weight = row[1]['weight']
 
-    # except ValueError:
+            similar_show = {
+                "id": show_id,
+                "name": show_name,
+                "weight": show_weight
+            }
+
+            results.append(similar_show)
+
     except ValueError:
-        results = {}
+        results = []
         df_train = input_df.copy()
         show = df_train[df_train['id'] == predict_idx].drop(['name', 'show_rating', 'weight'], axis=1).set_index('id')
         df_train = df_train.set_index('id')
@@ -76,22 +82,42 @@ def recommend():
         ary = scipy.spatial.distance.cdist(show, df_train_without_metadata, metric='yule')
         similars = df_train[ary[0]==ary[0].min()]
         similars = similars[~similars.index.isin([predict_idx])]
-        similars = similars.sample(n=n_neighbors, weights=similars.weight, random_state=RANDOM_STATE).reset_index().sort_values('weight', ascending=False)
+        similars = similars.sample(n=n_neighbors, weights=similars.weight, random_state=RANDOM_STATE) \
+                            .reset_index() \
+                            .sort_values('weight', ascending=False)
 
         for row in similars.iterrows():
             show_id = row[1]['id']
             show_name = row[1]['name']
-            results[str(show_id)] = show_name
+            show_weight = row[1]['weight']
+
+            similar_show = {
+                "id": show_id,
+                "name": show_name,
+                "weight": show_weight
+            }
+
+            results.append(similar_show)
 
     except IndexError:        
-        results = {}
+        results = []
         df_trend = input_df[input_df['weight']>=MIN_WEIGHT].sample(n=n_neighbors)
 
         for trend in df_trend.iterrows():
-            results[str(trend[1]['id'])] = trend[1]['name']
+            show_id = trend[1]['id']
+            show_name = trend[1]['name']
+            show_weight = trend[1]['weight']
+
+            similar_show = {
+                "id": show_id,
+                "name": show_name,
+                "weight": show_weight
+            }
+
+            results.append(similar_show)
 
     return jsonify(recommendations=results)
 
 
 if __name__ == '__main__':
-    app.run(port = 5000)
+    app.run()
