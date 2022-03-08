@@ -1,5 +1,5 @@
 '''
-    To debug, setup an env, and then run python3 app.py runserver -d with port = 5000 and debug=True added to the app.run
+    To debug, setup an env, and then run "python3 app.py runserver -d" with "port = 5000,debug=True" added to the app.run
     curl -X POST -H "Content-Type: application/json" \
     -d '{"show_id": 5555,"num_of_recs": 10,"weighted_model": false}' \
     http://127.0.0.1:5000/recommend
@@ -7,14 +7,11 @@
 import pandas as pd
 from flask import Flask, jsonify, request
 # import pickle
-import scipy
-
+import scipy.spatial as spatial
 
 # Constants
-MIN_YEAR = 2020
 MIN_WEIGHT = 85
 RANDOM_STATE = 42
-COLUMNS_TO_REMOVE = ['id', 'name', 'show_rating']
 
 # Variables
 # model = pickle.load(open('knn_model.pkl','rb'))
@@ -32,10 +29,11 @@ def recommend():
     predict_idx = data['show_id']
     n_neighbors = data['num_of_recs']
     weighted = data['weighted_model']
+    trending = False
 
     try:
         """
-        show = input_df[input_df['id'] == predict_idx].drop(COLUMNS_TO_REMOVE,axis=1).to_numpy().reshape(1, -1)
+        show = input_df[input_df['id'] == predict_idx].drop(['id', 'name', 'show_rating'],axis=1).to_numpy().reshape(1, -1)
 
         similar_shows = model.kneighbors(
                                             X=show,
@@ -55,7 +53,7 @@ def recommend():
         show = df_train[df_train['id'] == predict_idx].drop(['name', 'show_rating', 'weight'], axis=1).set_index('id')
         df_train = df_train.set_index('id')
         df_train_without_metadata = df_train.drop(['name', 'show_rating', 'weight'], axis=1)
-        ary = scipy.spatial.distance.cdist(show, df_train_without_metadata, metric='euclidean')
+        ary = spatial.distance.cdist(show, df_train_without_metadata, metric='euclidean')
         similars = df_train[ary[0]==ary[0].min()]
         similars = similars[~similars.index.isin([predict_idx])]
         similars = similars.sample(n=n_neighbors, weights=similars.weight, random_state=RANDOM_STATE).reset_index().sort_values('weight', ascending=False)
@@ -79,7 +77,7 @@ def recommend():
         show = df_train[df_train['id'] == predict_idx].drop(['name', 'show_rating', 'weight'], axis=1).set_index('id')
         df_train = df_train.set_index('id')
         df_train_without_metadata = df_train.drop(['name', 'show_rating', 'weight'], axis=1)
-        ary = scipy.spatial.distance.cdist(show, df_train_without_metadata, metric='yule')
+        ary = spatial.distance.cdist(show, df_train_without_metadata, metric='yule')
         similars = df_train[ary[0]==ary[0].min()]
         similars = similars[~similars.index.isin([predict_idx])]
         similars = similars.sample(n=n_neighbors, weights=similars.weight, random_state=RANDOM_STATE) \
@@ -99,7 +97,10 @@ def recommend():
 
             results.append(similar_show)
 
-    except IndexError:        
+    except IndexError:
+
+        trending = True
+
         results = []
         df_trend = input_df[input_df['weight']>=MIN_WEIGHT].sample(n=n_neighbors)
 
@@ -116,7 +117,7 @@ def recommend():
 
             results.append(similar_show)
 
-    return jsonify(recommendations=results)
+    return jsonify(trending_shows=trending,recommendations=results)
 
 
 if __name__ == '__main__':
